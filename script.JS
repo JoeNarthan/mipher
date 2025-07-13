@@ -1,438 +1,404 @@
-/**
- * Cipher Master Project - JavaScript Implementation
- * This file contains all cipher algorithms with detailed comments
- */
-
-/**
- * UTILITY FUNCTIONS
- */
-
-/**
- * Proper modulo function that handles negative numbers
- * @param {number} n - The dividend
- * @param {number} m - The divisor
- * @returns {number} The remainder
- */
-function mod(n, m) {
-  return ((n % m) + m) % m;
-}
-
-/**
- * Calculates the greatest common divisor (GCD) of two numbers
- * @param {number} a - First number
- * @param {number} b - Second number
- * @returns {number} GCD of a and b
- */
-function gcd(a, b) {
-  if (b === 0) return a;
-  return gcd(b, a % b);
-}
-
-/**
- * Finds the modular inverse of a number
- * @param {number} a - The number
- * @param {number} m - The modulus
- * @returns {number} The modular inverse or -1 if none exists
- */
-function modInverse(a, m) {
-  for (let x = 1; x < m; x++) {
-    if (mod(a * x, m) === 1) return x;
-  }
-  return -1;
-}
-
-/**
- * Checks if a number is prime
- * @param {number} num - Number to check
- * @returns {boolean} True if prime, false otherwise
- */
-function isPrime(num) {
-  if (num <= 1) return false;
-  if (num <= 3) return true;
-  if (num % 2 === 0 || num % 3 === 0) return false;
-  for (let i = 5; i * i <= num; i += 6) {
-    if (num % i === 0 || num % (i + 2) === 0) return false;
-  }
-  return true;
-}
-
-/**
- * I. CAESAR CIPHER (Fixed Shift = 3)
- */
-
-/**
- * Encrypts text using Caesar cipher with shift of 3
- * This cipher moves each letter 3 places forward in the alphabet (A -> D, B -> E, ...)
- */
-function caesarEncrypt() {
-  const text = document.getElementById("caesarText").value.toUpperCase();
-  let result = '';
-  
-  for (let char of text) {
-    if (char >= 'A' && char <= 'Z') {
-      // Shift character by 3 positions in the alphabet
-      result += String.fromCharCode(((char.charCodeAt(0) - 65 + 3) % 26) + 65);
-    } else {
-      result += char; // Leave non-alphabet characters unchanged
-    }
-  }
-  
-  document.getElementById("caesarResult").innerText = result;
-}
-
-/**
- * Decrypts text using Caesar cipher with shift of 3
- */
-function caesarDecrypt() {
-  const text = document.getElementById("caesarText").value.toUpperCase();
-  let result = '';
-  
-  for (let char of text) {
-    if (char >= 'A' && char <= 'Z') {
-      // Unshift character by 3 positions in the alphabet
-      result += String.fromCharCode(((char.charCodeAt(0) - 65 - 3 + 26) % 26) + 65);
-    } else {
-      result += char;
-    }
-  }
-  
-  document.getElementById("caesarResult").innerText = result;
-}
-
-/**
- * II. GENERAL SHIFT CIPHER
- */
-
-/**
- * Encrypts text using a general shift cipher with user-provided key
- */
-function shiftEncrypt() {
-  const text = document.getElementById("shiftText").value.toUpperCase();
-  const key = parseInt(document.getElementById("shiftKey").value);
-  if (isNaN(key)) return alert("Please enter a valid key!");
-
-  let result = '';
-  
-  for (let char of text) {
-    if (char >= 'A' && char <= 'Z') {
-      // Shift character by key positions in the alphabet
-      result += String.fromCharCode(mod((char.charCodeAt(0) - 65 + key), 26) + 65);
-    } else {
-      result += char;
-    }
-  }
-  
-  document.getElementById("shiftResult").innerText = result;
-}
-
-/**
- * Decrypts text using a general shift cipher with user-provided key
- */
-function shiftDecrypt() {
-  const text = document.getElementById("shiftText").value.toUpperCase();
-  const key = parseInt(document.getElementById("shiftKey").value);
-  if (isNaN(key)) return alert("Please enter a valid key!");
-
-  let result = '';
-  
-  for (let char of text) {
-    if (char >= 'A' && char <= 'Z') {
-      // Unshift character by key positions in the alphabet
-      result += String.fromCharCode(mod((char.charCodeAt(0) - 65 - key), 26) + 65);
-    } else {
-      result += char;
-    }
-  }
-  
-  document.getElementById("shiftResult").innerText = result;
-}
-
-/**
- * Brute Force Attack for Shift Cipher
- * Tries all possible shift values (1-25) to find potential plaintext
- */
-function shiftBruteForce() {
-  const ciphertext = document.getElementById("shiftText").value.toUpperCase();
-  if (!ciphertext) return alert("Please enter some ciphertext!");
-  
-  const resultsContainer = document.getElementById("shiftBruteForceResults");
-  resultsContainer.innerHTML = "<h4>Brute Force Results:</h4>";
-  
-  // Try all possible shifts (1 to 25)
-  for (let key = 1; key < 26; key++) {
-    let plaintext = '';
+// Theme Toggle Functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const themeToggle = document.getElementById('themeToggle');
+    const prefersDarkScheme = window.matchMedia('(prefers-color-scheme: dark)');
     
-    for (let char of ciphertext) {
-      if (char >= 'A' && char <= 'Z') {
-        plaintext += String.fromCharCode(mod((char.charCodeAt(0) - 65 - key), 26) + 65);
-      } else {
-        plaintext += char;
-      }
+    // Set initial theme based on user preference or localStorage
+    if (localStorage.getItem('theme') === 'dark' || (!localStorage.getItem('theme') && prefersDarkScheme.matches)) {
+        document.documentElement.setAttribute('data-theme', 'dark');
+        themeToggle.checked = true;
     }
     
-    // Display each attempt
-    const resultElement = document.createElement("p");
-    resultElement.innerHTML = `<strong>Shift ${key}:</strong> ${plaintext}`;
-    resultsContainer.appendChild(resultElement);
-  }
-}
-
-/**
- * III. AFFINE CIPHER
- */
-
-/**
- * Encrypts text using an affine cipher with keys a and b
- * Encryption formula: E(x) = (a * x + b) mod 26
- */
-function affineEncrypt() {
-  const text = document.getElementById("affineText").value.toUpperCase();
-  const a = parseInt(document.getElementById("keyA").value);
-  const b = parseInt(document.getElementById("keyB").value);
-  if (isNaN(a) || isNaN(b)) return alert("Enter valid keys!");
-
-  let result = '';
-  
-  for (let char of text) {
-    if (char >= 'A' && char <= 'Z') {
-      // Apply affine transformation: E(x) = (a*x + b) mod 26
-      let x = char.charCodeAt(0) - 65;
-      result += String.fromCharCode(mod((a * x + b), 26) + 65);
-    } else {
-      result += char;
-    }
-  }
-  
-  document.getElementById("affineResult").innerText = result;
-}
-
-/**
- * Decrypts text using an affine cipher with keys a and b
- */
-function affineDecrypt() {
-  const text = document.getElementById("affineText").value.toUpperCase();
-  const a = parseInt(document.getElementById("keyA").value);
-  const b = parseInt(document.getElementById("keyB").value);
-  if (isNaN(a) || isNaN(b)) return alert("Enter valid keys!");
-
-  // Find modular inverse of a
-  let a_inv = modInverse(a, 26);
-  if (a_inv === -1) return alert("Invalid key a (no modular inverse)");
-
-  let result = '';
-  
-  for (let char of text) {
-    if (char >= 'A' && char <= 'Z') {
-      // Apply inverse affine transformation: D(y) = a_inv*(y - b) mod 26
-      let y = char.charCodeAt(0) - 65;
-      result += String.fromCharCode(mod(a_inv * (y - b), 26) + 65);
-    } else {
-      result += char;
-    }
-  }
-  
-  document.getElementById("affineResult").innerText = result;
-}
-
-/**
- * Brute Force Attack for Affine Cipher
- * Tries all possible valid a values (coprime with 26) with all possible b values
- */
-function affineBruteForce() {
-  const ciphertext = document.getElementById("affineText").value.toUpperCase();
-  if (!ciphertext) return alert("Please enter some ciphertext!");
-  
-  const resultsContainer = document.getElementById("affineBruteForceResults");
-  resultsContainer.innerHTML = "<h4>Brute Force Results:</h4>";
-  
-  // Valid a values (must be coprime with 26)
-  const validAValues = [1, 3, 5, 7, 9, 11, 15, 17, 19, 21, 23, 25];
-  
-  // Try all valid a and b combinations
-  for (let a of validAValues) {
-    for (let b = 0; b < 26; b++) {
-      const a_inv = modInverse(a, 26);
-      let plaintext = '';
-      
-      for (let char of ciphertext) {
-        if (char >= 'A' && char <= 'Z') {
-          let y = char.charCodeAt(0) - 65;
-          plaintext += String.fromCharCode(mod(a_inv * (y - b), 26) + 65);
+    // Theme toggle event listener
+    themeToggle.addEventListener('change', function() {
+        if (this.checked) {
+            document.documentElement.setAttribute('data-theme', 'dark');
+            localStorage.setItem('theme', 'dark');
         } else {
-          plaintext += char;
+            document.documentElement.removeAttribute('data-theme');
+            localStorage.setItem('theme', 'light');
         }
-      }
-      
-      // Display each attempt
-      const resultElement = document.createElement("p");
-      resultElement.innerHTML = `<strong>a=${a}, b=${b}:</strong> ${plaintext}`;
-      resultsContainer.appendChild(resultElement);
-    }
-  }
+    });
+    
+    // Tab switching functionality
+    const tabButtons = document.querySelectorAll('.tab-btn');
+    tabButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const tabId = this.getAttribute('data-tab');
+            
+            // Remove active class from all buttons and content
+            tabButtons.forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            // Add active class to clicked button and corresponding content
+            this.classList.add('active');
+            document.getElementById(tabId).classList.add('active');
+        });
+    });
+});
+
+// Helper Functions
+function isLetter(char) {
+    return char.toLowerCase() !== char.toUpperCase();
 }
 
-/**
- * IV. TRANSPOSITION CIPHER
- */
+function processText(text, processFunction) {
+    return text.split('').map(char => {
+        if (isLetter(char)) {
+            return processFunction(char);
+        }
+        return char;
+    }).join('');
+}
 
-/**
- * Encrypts text using a columnar transposition cipher with the given keyword
- */
+function mod(n, m) {
+    return ((n % m) + m) % m;
+}
+
+// Caesar Cipher Functions
+function caesarEncrypt() {
+    const text = document.getElementById('caesarText').value;
+    const result = processText(text, char => {
+        const code = char.charCodeAt(0);
+        const shift = char.toLowerCase() === char ? 97 : 65;
+        return String.fromCharCode(mod((code - shift + 3), 26) + shift);
+    });
+    document.getElementById('caesarResult').textContent = result;
+}
+
+function caesarDecrypt() {
+    const text = document.getElementById('caesarText').value;
+    const result = processText(text, char => {
+        const code = char.charCodeAt(0);
+        const shift = char.toLowerCase() === char ? 97 : 65;
+        return String.fromCharCode(mod((code - shift - 3), 26) + shift);
+    });
+    document.getElementById('caesarResult').textContent = result;
+}
+
+// Shift Cipher Functions
+function shiftEncrypt() {
+    const text = document.getElementById('shiftText').value;
+    const shift = parseInt(document.getElementById('shiftKey').value) || 0;
+    const result = processText(text, char => {
+        const code = char.charCodeAt(0);
+        const base = char.toLowerCase() === char ? 97 : 65;
+        return String.fromCharCode(mod((code - base + shift), 26) + base);
+    });
+    document.getElementById('shiftResult').textContent = result;
+}
+
+function shiftDecrypt() {
+    const text = document.getElementById('shiftText').value;
+    const shift = parseInt(document.getElementById('shiftKey').value) || 0;
+    const result = processText(text, char => {
+        const code = char.charCodeAt(0);
+        const base = char.toLowerCase() === char ? 97 : 65;
+        return String.fromCharCode(mod((code - base - shift), 26) + base);
+    });
+    document.getElementById('shiftResult').textContent = result;
+}
+
+function shiftBruteForce() {
+    const text = document.getElementById('shiftText').value;
+    const grid = document.getElementById('shiftBruteForceGrid');
+    grid.innerHTML = '';
+    
+    for (let shift = 0; shift < 26; shift++) {
+        const result = processText(text, char => {
+            const code = char.charCodeAt(0);
+            const base = char.toLowerCase() === char ? 97 : 65;
+            return String.fromCharCode(mod((code - base - shift), 26) + base);
+        });
+        
+        const item = document.createElement('div');
+        item.className = 'result-item';
+        item.innerHTML = `<strong>Shift ${shift}:</strong> ${result}`;
+        grid.appendChild(item);
+    }
+}
+
+// Affine Cipher Functions
+function gcd(a, b) {
+    if (b === 0) return a;
+    return gcd(b, a % b);
+}
+
+function modInverse(a, m) {
+    a = mod(a, m);
+    for (let x = 1; x < m; x++) {
+        if (mod(a * x, m) === 1) return x;
+    }
+    return 1;
+}
+
+function affineEncrypt() {
+    const text = document.getElementById('affineText').value;
+    const a = parseInt(document.getElementById('keyA').value) || 1;
+    const b = parseInt(document.getElementById('keyB').value) || 0;
+    
+    if (gcd(a, 26) !== 1) {
+        alert('Key A must be coprime with 26 (gcd(a,26) = 1)');
+        return;
+    }
+    
+    const result = processText(text, char => {
+        const code = char.charCodeAt(0);
+        const base = char.toLowerCase() === char ? 97 : 65;
+        const x = code - base;
+        return String.fromCharCode(mod(a * x + b, 26) + base);
+    });
+    document.getElementById('affineResult').textContent = result;
+}
+
+function affineDecrypt() {
+    const text = document.getElementById('affineText').value;
+    const a = parseInt(document.getElementById('keyA').value) || 1;
+    const b = parseInt(document.getElementById('keyB').value) || 0;
+    
+    if (gcd(a, 26) !== 1) {
+        alert('Key A must be coprime with 26 (gcd(a,26) = 1)');
+        return;
+    }
+    
+    const aInv = modInverse(a, 26);
+    const result = processText(text, char => {
+        const code = char.charCodeAt(0);
+        const base = char.toLowerCase() === char ? 97 : 65;
+        const y = code - base;
+        return String.fromCharCode(mod(aInv * (y - b), 26) + base);
+    });
+    document.getElementById('affineResult').textContent = result;
+}
+
+function affineBruteForce() {
+    const text = document.getElementById('affineText').value;
+    const grid = document.getElementById('affineBruteForceGrid');
+    grid.innerHTML = '';
+    
+    const validAValues = [1, 3, 5, 7, 9, 11, 15, 17, 19, 21, 23, 25];
+    
+    for (const a of validAValues) {
+        for (let b = 0; b < 26; b++) {
+            const aInv = modInverse(a, 26);
+            const result = processText(text, char => {
+                const code = char.charCodeAt(0);
+                const base = char.toLowerCase() === char ? 97 : 65;
+                const y = code - base;
+                return String.fromCharCode(mod(aInv * (y - b), 26) + base);
+            });
+            
+            const item = document.createElement('div');
+            item.className = 'result-item';
+            item.innerHTML = `<strong>a=${a}, b=${b}:</strong> ${result}`;
+            grid.appendChild(item);
+        }
+    }
+}
+
+// Transposition Cipher Functions
 function transpositionEncrypt() {
-  const text = document.getElementById("transpositionText").value.toUpperCase().replace(/[^A-Z]/g, '');
-  const key = document.getElementById("transpositionKey").value;
-  
-  if (!text || !key) return alert("Please enter both text and key!");
-  
-  // Determine number of columns from key length
-  const cols = key.length;
-  const rows = Math.ceil(text.length / cols);
-  
-  // Pad text if needed
-  let paddedText = text;
-  while (paddedText.length < rows * cols) {
-    paddedText += 'X';
-  }
-  
-  // Create grid
-  let grid = [];
-  for (let i = 0; i < rows; i++) {
-    grid.push(paddedText.substr(i * cols, cols).split(''));
-  }
-  
-  // Determine column order from key (sort columns based on key digits)
-  const colOrder = key.split('').map(Number).map((num, i) => ({num, i})).sort((a, b) => a.num - b.num).map(x => x.i);
-  
-  // Read columns in order to create ciphertext
-  let result = '';
-  for (let col of colOrder) {
-    for (let row = 0; row < rows; row++) {
-      result += grid[row][col];
+    const text = document.getElementById('transpositionText').value;
+    const key = document.getElementById('transpositionKey').value;
+    
+    if (!key) {
+        alert('Please enter a keyword');
+        return;
     }
-  }
-  
-  document.getElementById("transpositionResult").innerText = result;
+    
+    // Remove non-alphanumeric characters from key and convert to uppercase
+    const cleanKey = key.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
+    const keyOrder = getKeyOrder(cleanKey);
+    
+    const cols = keyOrder.length;
+    const rows = Math.ceil(text.length / cols);
+    
+    // Create grid and fill with text
+    let grid = Array(rows).fill().map(() => Array(cols).fill(''));
+    let index = 0;
+    
+    for (let i = 0; i < rows; i++) {
+        for (let j = 0; j < cols; j++) {
+            if (index < text.length) {
+                grid[i][j] = text[index++];
+            }
+        }
+    }
+    
+    // Read columns in key order
+    let result = '';
+    for (const col of keyOrder) {
+        for (let row = 0; row < rows; row++) {
+            result += grid[row][col];
+        }
+    }
+    
+    document.getElementById('transpositionResult').textContent = result;
 }
 
-/**
- * Decrypts text using a columnar transposition cipher with the given keyword
- */
 function transpositionDecrypt() {
-  const text = document.getElementById("transpositionText").value.toUpperCase().replace(/[^A-Z]/g, '');
-  const key = document.getElementById("transpositionKey").value;
-  
-  if (!text || !key) return alert("Please enter both text and key!");
-  
-  const cols = key.length;
-  const rows = Math.ceil(text.length / cols);
-  
-  // Determine column order from key
-  const colOrder = key.split('').map(Number).map((num, i) => ({num, i})).sort((a, b) => a.num - b.num).map(x => x.i);
-  
-  // Determine original column order (inverse permutation)
-  const originalCols = [];
-  for (let i = 0; i < cols; i++) {
-    originalCols[colOrder.indexOf(i)] = i;
-  }
-  
-  // Reconstruct grid by filling columns in the original order
-  let grid = Array(rows).fill().map(() => Array(cols).fill(''));
-  let index = 0;
-  
-  for (let col of originalCols) {
+    const text = document.getElementById('transpositionText').value;
+    const key = document.getElementById('transpositionKey').value;
+    
+    if (!key) {
+        alert('Please enter a keyword');
+        return;
+    }
+    
+    const cleanKey = key.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
+    const keyOrder = getKeyOrder(cleanKey);
+    
+    const cols = keyOrder.length;
+    const rows = Math.ceil(text.length / cols);
+    
+    // Create grid
+    let grid = Array(rows).fill().map(() => Array(cols).fill(''));
+    let index = 0;
+    
+    // Fill grid column-wise in key order
+    for (const col of keyOrder) {
+        for (let row = 0; row < rows; row++) {
+            if (index < text.length) {
+                grid[row][col] = text[index++];
+            }
+        }
+    }
+    
+    // Read row-wise
+    let result = '';
     for (let row = 0; row < rows; row++) {
-      if (index < text.length) {
-        grid[row][col] = text.charAt(index++);
-      }
+        for (let col = 0; col < cols; col++) {
+            result += grid[row][col];
+        }
     }
-  }
-  
-  // Read row-wise to get original plaintext
-  let result = '';
-  for (let row = 0; row < rows; row++) {
-    for (let col = 0; col < cols; col++) {
-      result += grid[row][col];
-    }
-  }
-  
-  // Remove padding X's (if any)
-  result = result.replace(/X+$/, '');
-  
-  document.getElementById("transpositionResult").innerText = result;
+    
+    document.getElementById('transpositionResult').textContent = result;
 }
 
-/**
- * V. RSA CRYPTOGRAPHY
- */
+function getKeyOrder(key) {
+    // Create array of objects with character and original position
+    const keyChars = key.split('').map((char, index) => ({
+        char,
+        originalIndex: index
+    }));
+    
+    // Sort by character (case-insensitive)
+    keyChars.sort((a, b) => a.char.localeCompare(b.char));
+    
+    // Create order array with original column indices in sorted order
+    const order = [];
+    const seen = new Set();
+    
+    for (const item of keyChars) {
+        // For duplicate characters, maintain original order
+        if (seen.has(item.char)) {
+            order.push(item.originalIndex);
+        } else {
+            seen.add(item.char);
+            order.push(item.originalIndex);
+        }
+    }
+    
+    return order;
+}
 
-/**
- * Generates RSA public and private keys from two prime numbers
- */
+// RSA Functions
+function isPrime(num) {
+    if (num <= 1) return false;
+    if (num <= 3) return true;
+    if (num % 2 === 0 || num % 3 === 0) return false;
+    
+    let i = 5;
+    while (i * i <= num) {
+        if (num % i === 0 || num % (i + 2) === 0) return false;
+        i += 6;
+    }
+    return true;
+}
+
 function rsaGenerateKeys() {
-  const p = parseInt(document.getElementById("rsaP").value);
-  const q = parseInt(document.getElementById("rsaQ").value);
-  
-  if (!isPrime(p) || !isPrime(q)) return alert("Both numbers must be prime!");
-  
-  // Calculate modulus and Euler's totient function
-  const n = p * q;
-  const phi = (p - 1) * (q - 1);
-  
-  // Find public exponent e (coprime with phi)
-  let e = 2;
-  while (e < phi) {
-    if (gcd(e, phi) === 1) break;
-    e++;
-  }
-  
-  // Find private exponent d (modular inverse of e mod phi)
-  const d = modInverse(e, phi);
-  if (d === -1) return alert("Could not compute modular inverse!");
-  
-  // Display keys
-  document.getElementById("rsaPublicKey").innerText = `(${e}, ${n})`;
-  document.getElementById("rsaPrivateKey").innerText = `(${d}, ${n})`;
+    const p = parseInt(document.getElementById('rsaP').value);
+    const q = parseInt(document.getElementById('rsaQ').value);
+    
+    if (!isPrime(p) || !isPrime(q)) {
+        alert('Both p and q must be prime numbers');
+        return;
+    }
+    
+    if (p === q) {
+        alert('p and q must be different prime numbers');
+        return;
+    }
+    
+    const n = p * q;
+    const phi = (p - 1) * (q - 1);
+    
+    // Find e (public key exponent)
+    let e = 65537; // Common choice for e
+    if (e >= phi || gcd(e, phi) !== 1) {
+        // Find a smaller e that's coprime with phi
+        e = 3;
+        while (e < phi && gcd(e, phi) !== 1) {
+            e += 2;
+        }
+    }
+    
+    // Find d (private key exponent)
+    const d = modInverse(e, phi);
+    
+    // Display keys
+    document.getElementById('rsaPublicKey').textContent = `(${e}, ${n})`;
+    document.getElementById('rsaPrivateKey').textContent = `(${d}, ${n})`;
+    
+    // Fill encryption fields with public key
+    document.getElementById('rsaEncryptE').value = e;
+    document.getElementById('rsaEncryptN').value = n;
+    
+    // Fill decryption fields with private key
+    document.getElementById('rsaDecryptD').value = d;
+    document.getElementById('rsaDecryptN').value = n;
 }
 
-/**
- * Encrypts text using RSA public key
- */
 function rsaEncrypt() {
-  const text = document.getElementById("rsaEncryptText").value;
-  const e = parseInt(document.getElementById("rsaEncryptE").value);
-  const n = parseInt(document.getElementById("rsaEncryptN").value);
-  
-  if (!text || isNaN(e) || isNaN(n)) return alert("Please enter valid values!");
-  
-  let result = '';
-  for (let char of text) {
-    // Encrypt each character: c = m^e mod n
-    const code = char.charCodeAt(0);
-    const encrypted = mod(Math.pow(code, e), n);
-    result += encrypted + ' ';
-  }
-  
-  document.getElementById("rsaEncryptResult").innerText = result.trim();
+    const text = document.getElementById('rsaEncryptText').value;
+    const e = parseInt(document.getElementById('rsaEncryptE').value);
+    const n = parseInt(document.getElementById('rsaEncryptN').value);
+    
+    if (!e || !n) {
+        alert('Please generate keys first or enter valid e and n values');
+        return;
+    }
+    
+    const result = [];
+    for (let i = 0; i < text.length; i++) {
+        const charCode = text.charCodeAt(i);
+        const encrypted = mod(Math.pow(charCode, e), n);
+        result.push(encrypted);
+    }
+    
+    document.getElementById('rsaEncryptResult').textContent = result.join(' ');
 }
 
-/**
- * Decrypts text using RSA private key
- */
 function rsaDecrypt() {
-  const text = document.getElementById("rsaDecryptText").value;
-  const d = parseInt(document.getElementById("rsaDecryptD").value);
-  const n = parseInt(document.getElementById("rsaDecryptN").value);
-  
-  if (!text || isNaN(d) || isNaN(n)) return alert("Please enter valid values!");
-  
-  const codes = text.split(' ').filter(x => x).map(Number);
-  let result = '';
-  
-  for (let code of codes) {
-    // Decrypt each number: m = c^d mod n
-    const decrypted = mod(Math.pow(code, d), n);
-    result += String.fromCharCode(decrypted);
-  }
-  
-  document.getElementById("rsaDecryptResult").innerText = result;
+    const ciphertext = document.getElementById('rsaDecryptText').value;
+    const d = parseInt(document.getElementById('rsaDecryptD').value);
+    const n = parseInt(document.getElementById('rsaDecryptN').value);
+    
+    if (!d || !n) {
+        alert('Please generate keys first or enter valid d and n values');
+        return;
+    }
+    
+    const numbers = ciphertext.split(/\s+/).map(num => parseInt(num));
+    let result = '';
+    
+    for (const num of numbers) {
+        if (isNaN(num)) continue;
+        const decrypted = mod(Math.pow(num, d), n);
+        result += String.fromCharCode(decrypted);
+    }
+    
+    document.getElementById('rsaDecryptResult').textContent = result;
 }
