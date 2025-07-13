@@ -1,0 +1,127 @@
+# 🔐 Cipher Web Project (JavaScript)
+
+## 📌 Concept
+
+This project is a **web-based encryption tool** written entirely in **JavaScript**, designed to help users understand and interact with classical cryptographic algorithms. It allows users to encrypt and decrypt text using four different cipher systems:
+
+1. Caesar Cipher (Shift = 3)
+2. General Shift Cipher (Custom shift key)
+3. Affine Cipher (Multiplicative + additive key)
+4. (Optional) RSA and Transposition Cipher *(if included later)*
+
+The main focus is understanding the **logic and math** behind the encryption and how characters are transformed, not just using the ciphers.
+
+---
+
+## 🌍 Overview
+
+Each section of the project has:
+
+* A text input form
+* Fields for keys if needed (like shift value or affine keys)
+* Buttons for **Encrypt** / **Decrypt**
+* Display of result immediately
+
+All logic is done on the frontend, using **pure JavaScript** — no frameworks, no backend, no external libraries.
+
+---
+
+## 📘 Technical Logic Explanation (Difficult Concepts Only)
+
+### 🔁 `mod()` Function
+
+Used throughout to handle modular arithmetic, especially with negative results.
+
+```js
+function mod(n, m) {
+  return ((n % m) + m) % m;
+}
+```
+
+This ensures the result is always positive (example: `mod(-3, 26)` returns `23`, not `-3`).
+
+### 1. 🔐 Caesar Cipher
+
+**Encryption logic:**
+
+```js
+char = String.fromCharCode(((char.charCodeAt(0) - 65 + 3) % 26) + 65);
+```
+
+* Convert char to number (A = 0, B = 1,...)
+* Add 3, take `% 26` to wrap around Z
+* Convert back to character
+
+**Decryption subtracts 3.**
+
+### 2. 📦 General Shift Cipher
+
+Same as Caesar, but allows **any key number**:
+
+```js
+String.fromCharCode(mod((char.charCodeAt(0) - 65 + key), 26) + 65);
+```
+
+Uses `mod()` to wrap both positive and negative keys.
+
+### 3. 🧮 Affine Cipher
+
+The hardest one!
+
+**Encryption:**
+
+```js
+E(x) = (a * x + b) mod 26
+```
+
+* `a` must have a modular inverse under mod 26
+* Converts each character `x` to number, applies formula, converts back
+
+**Decryption requires modular inverse of a:**
+
+```js
+a_inv = inverse of a mod 26
+D(x) = a_inv * (x - b) mod 26
+```
+
+To find `a_inv`:
+
+```js
+for (let i = 1; i < 26; i++) {
+  if (mod(a * i, 26) === 1) a_inv = i;
+}
+```
+
+This loop checks every number until one satisfies the modular inverse condition.
+If no inverse exists, cipher can't decrypt — must choose a different `a`.
+
+---
+
+## ✅ Why This Project Is Useful
+
+* Teaches core logic of crypto, not just button clicking
+* Shows how ASCII, modulo, and number transformation work in real time
+* Uses clean and beginner-friendly JavaScript
+* Easy to demo, test, and expand
+
+---
+
+## 🧠 Tips
+
+* Always check inputs and validate keys
+* Modular arithmetic is key to all ciphers
+* Keep ASCII range clear: A-Z is 65-90
+* Affine decryption will fail if `a` has no inverse (example: `a = 2` fails)
+
+---
+
+## 🚀 Next Steps (Optional)
+
+* Add RSA key generation and large integer support
+* Add Transposition Cipher with proper ordering
+* Add file encryption or message logs
+* Add Figma UI design or animations
+
+---
+
+Happy hacking and encrypting! 💻🔒

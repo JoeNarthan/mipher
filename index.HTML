@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Cipher Master Project 🔐</title>
+  <link rel="stylesheet" href="styles.CSS">
+</head>
+<body>
+  <h1>🔐 Cipher Master Project</h1>
+
+  <!-- Caesar Cipher -->
+  <section>
+    <h2>I. Caesar Cipher (Fixed Shift = 3)</h2>
+    <input type="text" id="caesarText" placeholder="Ex: SURRENDER NOW">
+    <div>
+      <button onclick="caesarEncrypt()">Encrypt</button>
+      <button onclick="caesarDecrypt()">Decrypt</button>
+    </div>
+    <p><strong>Result:</strong> <span id="caesarResult">No Result</span></p>
+  </section>
+
+  <!-- II. General Shift Cipher -->
+  <section>
+    <h2>II. General Shift Cipher</h2>
+    <input type="text" id="shiftText" placeholder="Ex: NO MERCY"><br>
+    <input type="number" id="shiftKey" placeholder="Enter Shift Key"><br>
+    <div>
+      <button onclick="shiftEncrypt()">Encrypt</button>
+      <button onclick="shiftDecrypt()">Decrypt</button>
+      <button onclick="shiftBruteForce()" class="brute-force-btn">Brute Force Attack</button>
+    </div>
+    <p><strong>Result:</strong> <span id="shiftResult">No Result</span></p>
+    <div id="shiftBruteForceResults" class="brute-force-results"></div>
+  </section>
+
+
+  <!-- III. Affine Cipher -->
+  <section>
+    <h2>III. Affine Cipher</h2>
+    <input type="text" id="affineText" placeholder="Ex: UNGSEREYSOPEA"><br>
+    <input type="number" id="keyA" placeholder="Enter key a">
+    <input type="number" id="keyB" placeholder="Enter key b"><br>
+    <div>
+      <button onclick="affineEncrypt()">Encrypt</button>
+      <button onclick="affineDecrypt()">Decrypt</button>
+      <button onclick="affineBruteForce()" class="brute-force-btn">Brute Force Attack</button>
+    </div>
+    <p><strong>Result:</strong> <span id="affineResult">No Result</span></p>
+    <div id="affineBruteForceResults" class="brute-force-results"></div>
+  </section>
+
+  <!-- Transposition Cipher -->
+  <section>
+    <h2>IV. Transposition Cipher</h2>
+    <p>Rearrange characters according to a specific keyword.</p>
+    <input type="text" id="transpositionText" placeholder="Ex: TRANSPOSITION"><br>
+    <input type="text" id="transpositionKey" placeholder="Enter keyword (Ex: 43152)">
+    <div class="keyword-example">Example keyword: 43152 (determines column order)</div>
+    <div>
+      <button onclick="transpositionEncrypt()">Encrypt</button>
+      <button onclick="transpositionDecrypt()">Decrypt</button>
+    </div>
+    <p><strong>Result:</strong> <span id="transpositionResult">No Result</span></p>
+  </section>
+
+  <!-- RSA Cryptography -->
+  <section>
+    <h2>V. RSA Cryptography</h2>
+    <p>Asymmetric encryption based on prime numbers.</p>
+    
+    <div class="sub-section">
+      <h3>RSA Key Generation</h3>
+      <input type="number" id="rsaP" placeholder="Enter first prime (p)"><br>
+      <input type="number" id="rsaQ" placeholder="Enter second prime (q)"><br>
+      <button onclick="rsaGenerateKeys()">Generate Keys</button>
+      <p><strong>Public Key (e, n):</strong> <span id="rsaPublicKey">No Result</span></p>
+      <p><strong>Private Key (d, n):</strong> <span id="rsaPrivateKey">No Result</span></p>
+    </div>
+    
+    <div class="sub-section">
+      <h3>RSA Encryption</h3>
+      <input type="text" id="rsaEncryptText" placeholder="Enter plaintext"><br>
+      <input type="number" id="rsaEncryptE" placeholder="Public key (e)"><br>
+      <input type="number" id="rsaEncryptN" placeholder="Modulus (n)"><br>
+      <button onclick="rsaEncrypt()">Encrypt</button>
+      <p><strong>Result:</strong> <span id="rsaEncryptResult">No Result</span></p>
+    </div>
+    
+    <div class="sub-section">
+      <h3>RSA Decryption</h3>
+      <input type="text" id="rsaDecryptText" placeholder="Enter ciphertext"><br>
+      <input type="number" id="rsaDecryptD" placeholder="Private key (d)"><br>
+      <input type="number" id="rsaDecryptN" placeholder="Modulus (n)"><br>
+      <button onclick="rsaDecrypt()">Decrypt</button>
+      <p><strong>Result:</strong> <span id="rsaDecryptResult">No Result</span></p>
+    </div>
+  </section>
+
+  <div id="footer">Created by Joe 💖</div>
+
+  <script src="script.JS"></script>
+</body>
+</html>
